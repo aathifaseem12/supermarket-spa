@@ -21,7 +21,7 @@ const toggleDark = () => {
     
     <nav class="bg-white dark:bg-gray-800 shadow-sm sticky top-0 z-10">
       <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-        <router-link to="/" class="text-2xl font-black text-blue-600 dark:text-blue-400 tracking-tight">
+        <router-link to="/" class="text-4xl font-black text-blue-600 dark:text-blue-400 tracking-tight">
           Ruhuna Supermart
         </router-link>
         

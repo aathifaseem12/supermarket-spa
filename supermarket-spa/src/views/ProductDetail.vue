@@ -14,6 +14,10 @@ onMounted(async () => {
     // Fetches the specific product using the ID from the URL
     const res = await fetch(`https://dummyjson.com/products/${route.params.id}`);
     product.value = await res.json();
+    // Multiply this single item's price by 200
+    fetchedProduct.price = Math.round(fetchedProduct.price * 200);
+    product.value = fetchedProduct;
+
   } catch (error) {
     console.error("Error fetching product details:", error);
   } finally {

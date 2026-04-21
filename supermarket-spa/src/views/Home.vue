@@ -12,7 +12,11 @@ onMounted(async () => {
     // Fetching from DummyJSON's supermarket groceries endpoint
     const res = await fetch('https://dummyjson.com/products/category/groceries');
     const data: ProductResponse = await res.json();
-    products.value = data.products;
+    // Multiply every price by 200 and round it to a whole number
+    products.value = data.products.map(p => ({
+      ...p,
+      price: Math.round(p.price * 200)
+    }));
   } catch (error) {
     console.error("Error fetching products:", error);
   } finally {

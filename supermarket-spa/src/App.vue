@@ -26,9 +26,11 @@ const toggleDark = () => {
         </router-link>
         
         <div class="flex items-center gap-4 sm:gap-6">
+        
           <div class="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-3 py-1 rounded-full font-bold text-sm">
             🛒 Cart: {{ cartStore.totalItems }}
           </div>
+          
           
           <button 
             @click="toggleDark" 

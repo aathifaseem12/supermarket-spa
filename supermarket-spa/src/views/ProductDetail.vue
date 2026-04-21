@@ -37,7 +37,7 @@ onMounted(async () => {
         <p class="text-gray-600 dark:text-gray-300 mb-6 leading-relaxed">{{ product.description }}</p>
         
         <div class="mb-6">
-          <span class="text-3xl font-extrabold text-blue-600 dark:text-blue-400">${{ product.price }}</span>
+          <span class="text-3xl font-extrabold text-blue-600 dark:text-blue-400">Rs.{{ product.price }}</span>
         </div>
         
         <button 

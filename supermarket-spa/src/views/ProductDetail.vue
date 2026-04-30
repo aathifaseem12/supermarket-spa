@@ -10,12 +10,12 @@ const product = ref<Product | null>(null);
 const loading = ref(true);
 const getUnit = (title: string) => {
   const name = title.toLowerCase();
-  if (name.includes('water') || name.includes('juice') || name.includes('milk')) {
-    return '/ Bottle';
+  if (name.includes('water') || name.includes('juice') || name.includes('milk') || name.includes('Drinks') || name.includes('Ice Cream') || name.includes('Cooking Oil')) {
+    return 'Liter';
   } else if (name.includes('egg')) {
-    return '/ Dozen';
+    return 'Dozen';
   }
-  return '/ Kg';
+  return 'Kg';
 };
 
 onMounted(async () => {

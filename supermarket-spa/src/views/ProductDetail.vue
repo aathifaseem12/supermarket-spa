@@ -10,7 +10,7 @@ const product = ref<Product | null>(null);
 const loading = ref(true);
 const getUnit = (title: string) => {
   const name = title.toLowerCase();
-  if (name.includes('water') || name.includes('juice') || name.includes('milk') || name.includes('Drinks') || name.includes('Ice Cream') || name.includes('Cooking Oil')) {
+  if (name.includes('water') || name.includes('juice') || name.includes('milk') || name.includes('drinks') || name.includes('ice cream') || name.includes('cooking oil')) {
     return 'Liter';
   } else if (name.includes('egg')) {
     return 'Dozen';

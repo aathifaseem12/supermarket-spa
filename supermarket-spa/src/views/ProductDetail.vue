@@ -8,6 +8,15 @@ const route = useRoute();
 const cartStore = useCartStore();
 const product = ref<Product | null>(null);
 const loading = ref(true);
+const getUnit = (title: string) => {
+  const name = title.toLowerCase();
+  if (name.includes('water') || name.includes('juice') || name.includes('milk')) {
+    return '/ Bottle';
+  } else if (name.includes('egg')) {
+    return '/ Dozen';
+  }
+  return '/ Kg';
+};
 
 onMounted(async () => {
   try {
@@ -34,6 +43,7 @@ onMounted(async () => {
     
     <div class="flex flex-col md:flex-row gap-8 bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm">
       <img :src="product.thumbnail" :alt="product.title" class="w-full md:w-1/2 rounded-lg shadow-sm bg-gray-50 object-cover" />
+      <span class="text-xl font-medium text-gray-500 dark:text-gray-400">{{ getUnit(product.title) }}</span>
       
       <div class="flex-1">
         <span class="uppercase tracking-wider text-sm text-gray-500 dark:text-gray-400">{{ product.category }}</span>

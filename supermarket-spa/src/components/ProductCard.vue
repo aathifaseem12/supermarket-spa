@@ -7,7 +7,7 @@ const cartStore = useCartStore();
 // Smart function to determine the correct unit
 const getUnit = (title: string) => {
   const name = title.toLowerCase();
-  if (name.includes('water') || name.includes('juice') || name.includes('milk') || name.includes('soft drinks') || name.includes('ice cream') || name.includes('cooking oil')) {
+  if (name.includes('water') || name.includes('juice') || name.includes('milk') || name.includes('soft drinks') || name.includes('ice cream') || name.includes('cooking oil') || name.includes('honey jar')) {
     return 'Liter';
   } else if (name.includes('egg')) {
     return 'Dozen';

@@ -10,7 +10,7 @@ const loading = ref(true);
 
 onMounted(async () => {
   try {
-    const res = await fetch('https://dummyjson.com/products/category/groceries');
+    const res = await fetch('https://dummyjson.com/products?limit=30');
     const data: ProductResponse = await res.json();
     
     // Keeps your currency conversion logic intact!

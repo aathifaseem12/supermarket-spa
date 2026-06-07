@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue';
+import { ref, onMounted, onUnmounted, computed } from 'vue';
 import type { Product, ProductResponse } from '../types';
 import ProductCard from '../components/ProductCard.vue';
 
@@ -8,10 +8,48 @@ const searchQuery = ref('');
 const selectedCategory = ref('All');
 const loading = ref(true);
 
-// 1. Updated collection to include your custom categories AND the original API categories
+// --- 🌟 Dynamic Offers & Ads Banner State ---
+const currentAdIndex = ref(0);
+let adTimer: ReturnType<typeof setInterval>;
+
+const groceryAds = ref([
+  {
+    id: 1,
+    title: "Avurudu Special Deals! 🌸",
+    description: "Get up to 25% off on all cooking essentials and dairy items.",
+    badge: "Limited Time",
+    bgClass: "bg-gradient-to-r from-red-500 to-orange-500"
+  },
+  {
+    id: 2,
+    title: "Fresh Bakery Morning Combo ☕",
+    description: "Buy any 2 croissants or sweet buns and get a milk packet absolutely free!",
+    badge: "BOGOF",
+    bgClass: "bg-gradient-to-r from-amber-500 to-yellow-600"
+  },
+  {
+    id: 3,
+    title: "Weekend Hydration Boost 💧",
+    description: "Save big! Flat Rs. 150 off when you buy a case of natural spring water bottles.",
+    badge: "Super Saver",
+    bgClass: "bg-gradient-to-r from-blue-500 to-cyan-600"
+  }
+]);
+
+onMounted(() => {
+  // Rotates the advertisement banner every 4 seconds automatically
+  adTimer = setInterval(() => {
+    currentAdIndex.value = (currentAdIndex.value + 1) % groceryAds.value.length;
+  }, 4000);
+});
+
+onUnmounted(() => {
+  clearInterval(adTimer); // Cleans up background process when navigating away
+});
+// --------------------------------------------
+
 const customCategories = ['All', 'Bakery', 'Drinks', 'Meats', 'Fruits', 'Beauty', 'Fragrances', 'Household'];
 
-// 2. High-quality matching images for every single bubble icon in your row
 const categoryImages: Record<string, string> = {
   'All': 'https://cdn-icons-png.flaticon.com/512/3081/3081840.png',
   'Bakery': 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=150&auto=format&fit=crop&q=60',
@@ -25,7 +63,6 @@ const categoryImages: Record<string, string> = {
 
 onMounted(async () => {
   try {
-    // Fetching 50 products ensures a fantastic variety across all categories
     const res = await fetch('https://dummyjson.com/products?limit=50');
     const data: ProductResponse = await res.json();
     
@@ -33,7 +70,6 @@ onMounted(async () => {
       const titleLower = p.title.toLowerCase();
       let assignedCategory = 'Household'; 
 
-      // Smart Sorting System: Evaluates title keywords or fallback API tags
       if (titleLower.includes('bread') || titleLower.includes('croissant') || titleLower.includes('cake') || titleLower.includes('powder')) {
         assignedCategory = 'Bakery';
       } else if (titleLower.includes('water') || titleLower.includes('juice') || titleLower.includes('milk') || titleLower.includes('cola') || titleLower.includes('soda')) {
@@ -43,9 +79,9 @@ onMounted(async () => {
       } else if (titleLower.includes('apple') || titleLower.includes('banana') || titleLower.includes('berry') || titleLower.includes('fruit')) {
         assignedCategory = 'Fruits';
       } else if (p.category === 'beauty') {
-        assignedCategory = 'Beauty'; // Preserves original Beauty tag
+        assignedCategory = 'Beauty';
       } else if (p.category === 'fragrances') {
-        assignedCategory = 'Fragrances'; // Preserves original Fragrances tag
+        assignedCategory = 'Fragrances';
       }
 
       return {
@@ -61,7 +97,6 @@ onMounted(async () => {
   }
 });
 
-// Filters layout matrix based on dynamic category selections + input text element matching
 const filteredProducts = computed(() => {
   return products.value.filter(p => {
     const matchesSearch = p.title.toLowerCase().includes(searchQuery.value.toLowerCase());
@@ -74,14 +109,43 @@ const filteredProducts = computed(() => {
 <template>
   <div class="max-w-7xl mx-auto px-4 py-8">
     
-    <div class="mb-10 flex flex-col md:flex-row justify-between items-center gap-4 border-b border-gray-100 dark:border-gray-800 pb-5">
-      <h1 class="text-3xl font-black text-gray-800 dark:text-white tracking-tight">Shop by Category</h1>
+    <div class="mb-6 flex flex-col md:flex-row justify-between items-center gap-4 border-b border-gray-100 dark:border-gray-800 pb-5">
+      <h1 class="text-3xl font-black text-gray-800 dark:text-white tracking-tight">Ruhuna Supermart</h1>
       <input 
         v-model="searchQuery" 
         type="text" 
         placeholder="Search for groceries..." 
         class="w-full md:w-80 px-4 py-2.5 border rounded-xl dark:bg-gray-800 dark:text-white dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm" 
       />
+    </div>
+
+    <div class="mb-10 overflow-hidden rounded-2xl shadow-sm text-white relative">
+      <div 
+        :class="[groceryAds[currentAdIndex].bgClass, 'p-6 sm:p-8 min-h-[140px] flex flex-col justify-center transition-all duration-500 relative']"
+      >
+        <span class="absolute top-4 right-4 bg-white/20 backdrop-blur-md px-2.5 py-1 rounded-md text-xs font-bold uppercase tracking-wider">
+          {{ groceryAds[currentAdIndex].badge }}
+        </span>
+        
+        <h2 class="text-2xl sm:text-3xl font-black mb-1.5 drop-shadow-sm">
+          {{ groceryAds[currentAdIndex].title }}
+        </h2>
+        <p class="text-white/90 text-sm sm:text-base max-w-2xl font-medium drop-shadow-xs">
+          {{ groceryAds[currentAdIndex].description }}
+        </p>
+
+        <div class="absolute bottom-4 right-4 flex gap-1.5">
+          <div 
+            v-for="(ad, index) in groceryAds" 
+            :key="ad.id"
+            :class="['w-2 h-2 rounded-full transition-all', currentAdIndex === index ? 'bg-white scale-125' : 'bg-white/40']"
+          ></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mb-4">
+      <h3 class="text-xl font-bold text-gray-800 dark:text-white">Shop by Department</h3>
     </div>
 
     <div class="mb-12 flex flex-wrap justify-center sm:justify-start gap-6 md:gap-8">

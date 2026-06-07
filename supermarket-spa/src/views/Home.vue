@@ -56,7 +56,7 @@ const categoryImages: Record<string, string> = {
   'Drinks': 'https://images.unsplash.com/photo-1622483767028-3f66f32aef97?w=150&auto=format&fit=crop&q=60',
   'Meats': 'https://images.unsplash.com/photo-1607623814075-e51df1bdc82f?w=150&auto=format&fit=crop&q=60',
   'Fruits': 'https://images.unsplash.com/photo-1619546813926-a78fa6372cd2?w=150&auto=format&fit=crop&q=60',
-  'Beauty': 'https://images.unsplash.com/photo-1608248597481-496100c80836?w=150&auto=format&fit=crop&q=60',
+  'Beauty': 'https://cdn-icons-png.flaticon.com/512/1940/1940922.png',
   'Fragrances': 'https://images.unsplash.com/photo-1541643600914-78b084683601?w=150&auto=format&fit=crop&q=60',
   'Household': 'https://images.unsplash.com/photo-1583947215259-38e31be8751f?w=150&auto=format&fit=crop&q=60'
 };

@@ -2,35 +2,63 @@
 import type { Product } from '../types';
 import { useCartStore } from '../store/cart';
 
-defineProps<{ product: Product }>();
+defineProps<{
+  product: Product;
+}>();
+
 const cartStore = useCartStore();
-// Smart function to determine the correct unit
+
+// Dynamic unit measurement helper function
 const getUnit = (title: string) => {
   const name = title.toLowerCase();
-  if (name.includes('water') || name.includes('juice') || name.includes('milk') || name.includes('soft drinks') || name.includes('ice cream') || name.includes('cooking oil') || name.includes('honey jar')) {
-    return 'Liter';
+  
+  if (name.includes('water') || name.includes('juice') || name.includes('milk') || name.includes('cola') || name.includes('soda') || name.includes('drink') || name.includes('oil')) {
+    return '/ Bottle';
   } else if (name.includes('egg')) {
-    return 'Dozen';
+    return '/ Dozen';
+  } else if (name.includes('ice cream')) {
+    return '/ Tub';
+  } else if (name.includes('pet') || name.includes('dog') || name.includes('cat') || (name.includes('food') && name.includes('can')) || name.includes('tuna')) {
+    return '/ Can';
+  } else if (name.includes('biscuit') || name.includes('snack') || name.includes('chips') || name.includes('box')) {
+    return '/ Pack';
   }
-  return 'Kg';
+  
+  return '/ Kg';
 };
 </script>
 
 <template>
-  <div class="border rounded-lg p-4 shadow-sm hover:shadow-md transition dark:bg-gray-800 dark:border-gray-700">
-    <img :src="product.thumbnail" :alt="product.title" class="w-full h-40 object-cover rounded-md mb-3 bg-white" />
-    <h2 class="text-lg font-bold text-gray-900 dark:text-white truncate">{{ product.title }}</h2>
-    <div class="mt-4 flex flex-col gap-2">
-      <span class="text-xl font-extrabold text-blue-600 dark:text-blue-400">Rs.{{ product.price }}</span>
-      <span class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ getUnit(product.title) }}</span>
-      <div class="flex gap-2">
-        <router-link :to="'/product/' + product.id" class="flex-1 text-center bg-gray-200 dark:bg-gray-700 dark:text-white py-1.5 rounded-md hover:bg-gray-300 transition font-medium">
-          View Details
-        </router-link>
-        <button @click="cartStore.addToCart(product)" class="flex-1 bg-blue-600 text-white py-1.5 rounded-md hover:bg-blue-700 transition font-medium">
-          Add to Cart
-        </button>
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-4 flex flex-col justify-between hover:shadow-lg hover:scale-105 transition-all duration-200">
+    <router-link :to="`/product/${product.id}`" class="block bg-gray-50 dark:bg-gray-900 rounded-lg p-4 mb-4 flex items-center justify-center h-48 overflow-hidden">
+      <img :src="product.thumbnail" :alt="product.title" class="max-h-full max-w-full object-contain" />
+    </router-link>
+
+    <div>
+      <span class="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider block mb-1">
+        {{ product.category }}
+      </span>
+      <router-link :to="`/product/${product.id}`" class="block">
+        <h2 class="font-bold text-gray-800 dark:text-white line-clamp-1 hover:text-blue-600 transition-colors">
+          {{ product.title }}
+        </h2>
+      </router-link>
+      <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-2 min-h-[2rem]">
+        {{ product.description }}
+      </p>
+    </div>
+
+    <div class="mt-4 pt-3 border-t border-gray-50 dark:border-gray-700 flex items-center justify-between">
+      <div class="flex items-baseline gap-0.5">
+        <span class="text-lg font-black text-gray-900 dark:text-white">Rs. {{ product.price }}</span>
+        <span class="text-xs font-medium text-gray-400 dark:text-gray-500">{{ getUnit(product.title) }}</span>
       </div>
+      <button 
+        @click="cartStore.addToCart(product)"
+        class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-3 py-2 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900"
+      >
+        + Add
+      </button>
     </div>
   </div>
 </template>

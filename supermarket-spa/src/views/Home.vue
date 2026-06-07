@@ -8,17 +8,52 @@ const searchQuery = ref('');
 const selectedCategory = ref('All');
 const loading = ref(true);
 
+// 1. Updated collection to include your custom categories AND the original API categories
+const customCategories = ['All', 'Bakery', 'Drinks', 'Meats', 'Fruits', 'Beauty', 'Fragrances', 'Household'];
+
+// 2. High-quality matching images for every single bubble icon in your row
+const categoryImages: Record<string, string> = {
+  'All': 'https://cdn-icons-png.flaticon.com/512/3081/3081840.png',
+  'Bakery': 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=150&auto=format&fit=crop&q=60',
+  'Drinks': 'https://images.unsplash.com/photo-1622483767028-3f66f32aef97?w=150&auto=format&fit=crop&q=60',
+  'Meats': 'https://images.unsplash.com/photo-1607623814075-e51df1bdc82f?w=150&auto=format&fit=crop&q=60',
+  'Fruits': 'https://images.unsplash.com/photo-1619546813926-a78fa6372cd2?w=150&auto=format&fit=crop&q=60',
+  'Beauty': 'https://images.unsplash.com/photo-1608248597481-496100c80836?w=150&auto=format&fit=crop&q=60',
+  'Fragrances': 'https://images.unsplash.com/photo-1541643600914-78b084683601?w=150&auto=format&fit=crop&q=60',
+  'Household': 'https://images.unsplash.com/photo-1583947215259-38e31be8751f?w=150&auto=format&fit=crop&q=60'
+};
+
 onMounted(async () => {
   try {
-    // Fetching 30 items so we get a good mix of categories
-    const res = await fetch('https://dummyjson.com/products?limit=30');
+    // Fetching 50 products ensures a fantastic variety across all categories
+    const res = await fetch('https://dummyjson.com/products?limit=50');
     const data: ProductResponse = await res.json();
     
-    // Keep your Sri Lankan price conversion rate logic
-    products.value = data.products.map(p => ({
-      ...p,
-      price: Math.round(p.price * 300)
-    }));
+    products.value = data.products.map(p => {
+      const titleLower = p.title.toLowerCase();
+      let assignedCategory = 'Household'; 
+
+      // Smart Sorting System: Evaluates title keywords or fallback API tags
+      if (titleLower.includes('bread') || titleLower.includes('croissant') || titleLower.includes('cake') || titleLower.includes('powder')) {
+        assignedCategory = 'Bakery';
+      } else if (titleLower.includes('water') || titleLower.includes('juice') || titleLower.includes('milk') || titleLower.includes('cola') || titleLower.includes('soda')) {
+        assignedCategory = 'Drinks';
+      } else if (titleLower.includes('chicken') || titleLower.includes('meat') || titleLower.includes('fish') || titleLower.includes('beef')) {
+        assignedCategory = 'Meats';
+      } else if (titleLower.includes('apple') || titleLower.includes('banana') || titleLower.includes('berry') || titleLower.includes('fruit')) {
+        assignedCategory = 'Fruits';
+      } else if (p.category === 'beauty') {
+        assignedCategory = 'Beauty'; // Preserves original Beauty tag
+      } else if (p.category === 'fragrances') {
+        assignedCategory = 'Fragrances'; // Preserves original Fragrances tag
+      }
+
+      return {
+        ...p,
+        category: assignedCategory, 
+        price: Math.round(p.price * 300) 
+      };
+    });
   } catch (error) {
     console.error("Error fetching products:", error);
   } finally {
@@ -26,22 +61,7 @@ onMounted(async () => {
   }
 });
 
-// A map linking API categories to clean grocery-style images
-const categoryImages: Record<string, string> = {
-  'All': 'https://cdn-icons-png.flaticon.com/512/3081/3081840.png', // Shop icon
-  'beauty': 'https://images.unsplash.com/photo-1608248597481-496100c80836?w=150&auto=format&fit=crop&q=60', 
-  'fragrances': 'https://images.unsplash.com/photo-1541643600914-78b084683601?w=150&auto=format&fit=crop&q=60',
-  'furniture': 'https://images.unsplash.com/photo-1592078615290-033ee584e267?w=150&auto=format&fit=crop&q=60',
-  'groceries': 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=150&auto=format&fit=crop&q=60'
-};
-
-// Auto-extract dynamic categories from loaded data
-const categories = computed(() => {
-  const list = products.value.map(p => p.category);
-  return ['All', ...new Set(list)];
-});
-
-// Filter products based on search or category circle clicked
+// Filters layout matrix based on dynamic category selections + input text element matching
 const filteredProducts = computed(() => {
   return products.value.filter(p => {
     const matchesSearch = p.title.toLowerCase().includes(searchQuery.value.toLowerCase());
@@ -66,7 +86,7 @@ const filteredProducts = computed(() => {
 
     <div class="mb-12 flex flex-wrap justify-center sm:justify-start gap-6 md:gap-8">
       <div 
-        v-for="category in categories" 
+        v-for="category in customCategories" 
         :key="category"
         @click="selectedCategory = category"
         class="flex flex-col items-center cursor-pointer group text-center"
@@ -80,7 +100,7 @@ const filteredProducts = computed(() => {
           ]"
         >
           <img 
-            :src="categoryImages[category] || 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=150'" 
+            :src="categoryImages[category]" 
             :alt="category"
             class="w-full h-full object-cover rounded-full"
           />
@@ -88,7 +108,7 @@ const filteredProducts = computed(() => {
         
         <span 
           :class="[
-            'mt-3 text-sm font-semibold capitalize tracking-wide transition-colors',
+            'mt-3 text-sm font-semibold tracking-wide transition-colors',
             selectedCategory === category 
               ? 'text-blue-600 font-bold' 
               : 'text-gray-700 dark:text-gray-300 group-hover:text-blue-500'

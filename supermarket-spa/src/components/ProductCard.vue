@@ -8,22 +8,37 @@ defineProps<{
 
 const cartStore = useCartStore();
 
-// Dynamic unit measurement helper function
-const getUnit = (title: string) => {
-  const name = title.toLowerCase();
+// Updated unit measurement helper function
+const getUnit = (product: Product) => {
+  const name = product.title.toLowerCase();
+  const category = product.category; // Reads the clean category name we assigned
   
+  // 1. Liquids and Beverages
   if (name.includes('water') || name.includes('juice') || name.includes('milk') || name.includes('cola') || name.includes('soda') || name.includes('drink') || name.includes('oil')) {
     return '/ Bottle';
-  } else if (name.includes('egg')) {
+  } 
+  // 2. Eggs
+  else if (name.includes('egg')) {
     return '/ Dozen';
-  } else if (name.includes('ice cream')) {
+  } 
+  // 3. Ice Cream
+  else if (name.includes('ice cream')) {
     return '/ Tub';
-  } else if (name.includes('pet') || name.includes('dog') || name.includes('cat') || (name.includes('food') && name.includes('can')) || name.includes('tuna')) {
+  } 
+  // 4. Canned items
+  else if (name.includes('pet') || name.includes('dog') || name.includes('cat') || (name.includes('food') && name.includes('can')) || name.includes('tuna')) {
     return '/ Can';
-  } else if (name.includes('biscuit') || name.includes('snack') || name.includes('chips') || name.includes('box')) {
+  } 
+  // 5. Packaged snacks or boxes
+  else if (name.includes('biscuit') || name.includes('snack') || name.includes('chips') || name.includes('box')) {
     return '/ Pack';
   }
+  // 🌟 NEW: Clean non-food categories formatting rules
+  else if (category === 'Household' || category === 'Beauty & Fragrances') {
+    return '/ unit';
+  }
   
+  // Fallback default for actual loose items (vegetables, sugar, flour, etc.)
   return '/ Kg';
 };
 </script>
@@ -51,7 +66,7 @@ const getUnit = (title: string) => {
     <div class="mt-4 pt-3 border-t border-gray-50 dark:border-gray-700 flex items-center justify-between">
       <div class="flex items-baseline gap-0.5">
         <span class="text-lg font-black text-gray-900 dark:text-white">Rs. {{ product.price }}</span>
-        <span class="text-xs font-medium text-gray-400 dark:text-gray-500">{{ getUnit(product.title) }}</span>
+        <span class="text-xs font-medium text-gray-400 dark:text-gray-500">{{ getUnit(product) }}</span>
       </div>
       <button 
         @click="cartStore.addToCart(product)"

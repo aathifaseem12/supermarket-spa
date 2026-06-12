@@ -14,36 +14,41 @@ onMounted(async () => {
     const data: ProductResponse = await res.json();
     
     products.value = data.products.map(p => {
-      const titleLower = p.title.toLowerCase();
-      const catLower = p.category.toLowerCase();
+      const titleLower = p.title?.toLowerCase() || '';
+      const catLower = p.category?.toLowerCase() || '';
       
-      // 1. Everything defaults to Household first (Perfect for oil, eggs, pans, powder)
       let assignedCategory = 'Household'; 
 
-      // 2. Ultra-Strict Sorting Logic
-      if (catLower === 'beauty' || catLower === 'fragrances' || titleLower.includes('soap') || titleLower.includes('shampoo')) {
-        assignedCategory = 'Beauty & Fragrances';
-      } 
-      else if (titleLower.includes('bread') || titleLower.includes('croissant') || titleLower.includes('cake') || titleLower.includes('bun') || titleLower.includes('biscuit')) {
-        assignedCategory = 'Bakery'; // Strictly baked goods only!
-      } 
-      else if (titleLower.includes('water') || titleLower.includes('juice') || titleLower.includes('milk') || titleLower.includes('cola') || titleLower.includes('soda') || titleLower.includes('drink') || titleLower.includes('coffee')) {
-        assignedCategory = 'Beverages';
+      // 🌟 STRICT ORDER OF OPERATIONS 🌟
+      // 1. Catch the highly specific items FIRST so they don't get mixed up
+      if (titleLower.includes('pet') || titleLower.includes('dog') || titleLower.includes('cat') || titleLower.includes('bird')) {
+        assignedCategory = 'Pet Care';
       } 
       else if (titleLower.includes('chicken') || titleLower.includes('meat') || titleLower.includes('fish') || titleLower.includes('beef') || titleLower.includes('tuna') || titleLower.includes('steak')) {
         assignedCategory = 'Meats & Fish';
       } 
+      else if (catLower === 'beauty' || catLower === 'fragrances' || titleLower.includes('soap') || titleLower.includes('shampoo')) {
+        assignedCategory = 'Beauty & Fragrances';
+      } 
+      // 2. Now handle the remaining categories safely
+      else if (titleLower.includes('bread') || titleLower.includes('croissant') || titleLower.includes('cake') || titleLower.includes('bun') || titleLower.includes('biscuit')) {
+        assignedCategory = 'Bakery'; 
+      } 
+      else if (titleLower.includes('water') || titleLower.includes('juice') || titleLower.includes('milk') || titleLower.includes('cola') || titleLower.includes('soda') || titleLower.includes('drink') || titleLower.includes('coffee')) {
+        assignedCategory = 'Beverages';
+      } 
       else if (titleLower.includes('apple') || titleLower.includes('banana') || titleLower.includes('berry') || titleLower.includes('fruit') || titleLower.includes('kiwi') || titleLower.includes('lemon')) {
         assignedCategory = 'Fruits';
       } 
-      else if (titleLower.includes('pet') || titleLower.includes('dog') || titleLower.includes('cat') || titleLower.includes('bird')) {
-        assignedCategory = 'Pet Care';
+      // 3. 🌟 THE NEW PANTRY (Groceries + Veggies merged together)
+      else if (catLower === 'groceries' || titleLower.includes('egg') || titleLower.includes('oil') || titleLower.includes('powder') || titleLower.includes('rice') || titleLower.includes('sugar') || titleLower.includes('salt') || titleLower.includes('tomato') || titleLower.includes('potato') || titleLower.includes('onion') || titleLower.includes('garlic') || titleLower.includes('carrot') || titleLower.includes('cabbage') || titleLower.includes('veg')) {
+        assignedCategory = 'Pantry & Kitchen';
       }
 
       return {
         ...p,
-        category: assignedCategory,
-        price: Math.round(p.price * 300) 
+        category: assignedCategory, 
+        price: Math.round((p.price || 0) * 300) 
       };
     });
   } catch (error) {
@@ -53,13 +58,11 @@ onMounted(async () => {
   }
 });
 
-// Auto-generates the text pill buttons
 const categories = computed(() => {
   const list = products.value.map(p => p.category);
   return ['All', ...new Set(list)];
 });
 
-// Search and filter logic
 const filteredProducts = computed(() => {
   return products.value.filter(p => {
     const matchesSearch = p.title.toLowerCase().includes(searchQuery.value.toLowerCase());
@@ -88,10 +91,10 @@ const filteredProducts = computed(() => {
         :key="category"
         @click="selectedCategory = category"
         :class="[
-          'px-4 py-1.5 rounded-full text-sm font-medium capitalize transition-colors shadow-sm',
+          'px-4 py-1.5 rounded-full text-sm font-medium capitalize transition-colors',
           selectedCategory === category 
             ? 'bg-blue-600 text-white' 
-            : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-100 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700 dark:hover:bg-gray-700'
+            : 'bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
         ]"
       >
         {{ category }}
@@ -103,7 +106,12 @@ const filteredProducts = computed(() => {
         <div class="absolute inset-0 border-4 border-blue-100 dark:border-gray-700 rounded-full"></div>
         <div class="absolute inset-0 border-4 border-t-blue-600 border-r-transparent border-b-transparent border-l-transparent rounded-full animate-spin"></div>
       </div>
-      <h3 class="text-xl font-bold text-gray-700 dark:text-gray-300 tracking-wide">Gathering Fresh Stock...</h3>
+      <h3 class="text-xl font-bold text-gray-700 dark:text-gray-300 tracking-wide">
+        Gathering Fresh Stock...
+      </h3>
+      <p class="text-xs text-gray-400 dark:text-gray-500">
+        Please wait while we stock our store shelves
+      </p>
     </div>
 
     <div v-else-if="filteredProducts.length > 0" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">

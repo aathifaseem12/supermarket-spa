@@ -19,8 +19,6 @@ onMounted(async () => {
       
       let assignedCategory = 'Household'; 
 
-      // 🌟 STRICT ORDER OF OPERATIONS 🌟
-      // 1. Catch the highly specific items FIRST so they don't get mixed up
       if (titleLower.includes('pet') || titleLower.includes('dog') || titleLower.includes('cat') || titleLower.includes('bird')) {
         assignedCategory = 'Pet Care';
       } 
@@ -30,7 +28,6 @@ onMounted(async () => {
       else if (catLower === 'beauty' || catLower === 'fragrances' || titleLower.includes('soap') || titleLower.includes('shampoo')) {
         assignedCategory = 'Beauty & Fragrances';
       } 
-      // 2. Now handle the remaining categories safely
       else if (titleLower.includes('bread') || titleLower.includes('croissant') || titleLower.includes('cake') || titleLower.includes('bun') || titleLower.includes('biscuit')) {
         assignedCategory = 'Bakery'; 
       } 
@@ -40,7 +37,6 @@ onMounted(async () => {
       else if (titleLower.includes('apple') || titleLower.includes('banana') || titleLower.includes('berry') || titleLower.includes('fruit') || titleLower.includes('kiwi') || titleLower.includes('lemon')) {
         assignedCategory = 'Fruits';
       } 
-      // 3. 🌟 THE NEW PANTRY (Groceries + Veggies merged together)
       else if (catLower === 'groceries' || titleLower.includes('egg') || titleLower.includes('oil') || titleLower.includes('powder') || titleLower.includes('rice') || titleLower.includes('sugar') || titleLower.includes('salt') || titleLower.includes('tomato') || titleLower.includes('potato') || titleLower.includes('onion') || titleLower.includes('garlic') || titleLower.includes('carrot') || titleLower.includes('cabbage') || titleLower.includes('veg')) {
         assignedCategory = 'Pantry & Kitchen';
       }
@@ -73,7 +69,7 @@ const filteredProducts = computed(() => {
 </script>
 
 <template>
-  <div class="max-w-7xl mx-auto px-4 py-8">
+  <div class="max-w-7xl mx-auto px-4 py-8 overflow-hidden">
     
     <div class="mb-6 flex flex-col md:flex-row justify-between items-center gap-4">
       <h1 class="text-3xl font-bold dark:text-white">Fresh Groceries</h1>
@@ -81,7 +77,7 @@ const filteredProducts = computed(() => {
         v-model="searchQuery" 
         type="text" 
         placeholder="Search products..." 
-        class="w-full md:w-72 px-4 py-2 border rounded-lg dark:bg-gray-800 dark:text-white dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500" 
+        class="w-full md:w-72 px-4 py-2 border rounded-lg dark:bg-gray-800 dark:text-white dark:border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all focus:shadow-lg" 
       />
     </div>
 
@@ -91,10 +87,10 @@ const filteredProducts = computed(() => {
         :key="category"
         @click="selectedCategory = category"
         :class="[
-          'px-4 py-1.5 rounded-full text-sm font-medium capitalize transition-colors',
+          'px-4 py-1.5 rounded-full text-sm font-medium capitalize transition-all duration-300 transform hover:-translate-y-1 hover:shadow-md',
           selectedCategory === category 
-            ? 'bg-blue-600 text-white' 
-            : 'bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
+            ? 'bg-blue-600 text-white shadow-md scale-105' 
+            : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-100 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700 dark:hover:bg-gray-700'
         ]"
       >
         {{ category }}
@@ -114,13 +110,18 @@ const filteredProducts = computed(() => {
       </p>
     </div>
 
-    <div v-else-if="filteredProducts.length > 0" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+    <TransitionGroup 
+      v-else-if="filteredProducts.length > 0" 
+      name="list" 
+      tag="div" 
+      class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"
+    >
       <ProductCard 
         v-for="product in filteredProducts" 
         :key="product.id" 
         :product="product" 
       />
-    </div>
+    </TransitionGroup>
 
     <div v-else class="text-center text-gray-500 dark:text-gray-400 py-10 text-lg">
       No items matching your selection could be found.
@@ -128,3 +129,23 @@ const filteredProducts = computed(() => {
 
   </div>
 </template>
+
+<style scoped>
+/* The starting and ending state of the cards */
+.list-enter-from,
+.list-leave-to {
+  opacity: 0;
+  transform: translateY(30px) scale(0.95);
+}
+
+/* The smooth easing transition */
+.list-enter-active,
+.list-leave-active {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* This makes sure cards smoothly slide around when surrounding cards are deleted/moved */
+.list-move {
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+</style>

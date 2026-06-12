@@ -10,42 +10,40 @@ const loading = ref(true);
 
 onMounted(async () => {
   try {
-    // Fetching 50 items to make sure we get a rich mix of items to sort
     const res = await fetch('https://dummyjson.com/products?limit=50');
     const data: ProductResponse = await res.json();
     
     products.value = data.products.map(p => {
       const titleLower = p.title.toLowerCase();
-      let assignedCategory = 'Household'; // Fallback shelf
+      const catLower = p.category.toLowerCase();
+      
+      // 1. Everything defaults to Household first (Perfect for oil, eggs, pans, powder)
+      let assignedCategory = 'Household'; 
 
-      // Smart Sorting Logic - Breaks items into specific shelves based on keywords
-      if (titleLower.includes('bread') || titleLower.includes('croissant') || titleLower.includes('cake') || titleLower.includes('bun') || titleLower.includes('biscuit')) {
-        assignedCategory = 'Bakery';
+      // 2. Ultra-Strict Sorting Logic
+      if (catLower === 'beauty' || catLower === 'fragrances' || titleLower.includes('soap') || titleLower.includes('shampoo')) {
+        assignedCategory = 'Beauty & Fragrances';
+      } 
+      else if (titleLower.includes('bread') || titleLower.includes('croissant') || titleLower.includes('cake') || titleLower.includes('bun') || titleLower.includes('biscuit')) {
+        assignedCategory = 'Bakery'; // Strictly baked goods only!
       } 
       else if (titleLower.includes('water') || titleLower.includes('juice') || titleLower.includes('milk') || titleLower.includes('cola') || titleLower.includes('soda') || titleLower.includes('drink') || titleLower.includes('coffee')) {
         assignedCategory = 'Beverages';
       } 
-      else if (titleLower.includes('chicken') || titleLower.includes('meat') || titleLower.includes('fish') || titleLower.includes('beef') || titleLower.includes('tuna')) {
+      else if (titleLower.includes('chicken') || titleLower.includes('meat') || titleLower.includes('fish') || titleLower.includes('beef') || titleLower.includes('tuna') || titleLower.includes('steak')) {
         assignedCategory = 'Meats & Fish';
       } 
-      else if (titleLower.includes('apple') || titleLower.includes('banana') || titleLower.includes('berry') || titleLower.includes('fruit')) {
+      else if (titleLower.includes('apple') || titleLower.includes('banana') || titleLower.includes('berry') || titleLower.includes('fruit') || titleLower.includes('kiwi') || titleLower.includes('lemon')) {
         assignedCategory = 'Fruits';
       } 
       else if (titleLower.includes('pet') || titleLower.includes('dog') || titleLower.includes('cat') || titleLower.includes('bird')) {
         assignedCategory = 'Pet Care';
-      } 
-      else if (p.category === 'beauty' || p.category === 'fragrances' || titleLower.includes('soap') || titleLower.includes('shampoo')) {
-        assignedCategory = 'Beauty & Fragrances';
-      } 
-      else if (p.category === 'groceries' || titleLower.includes('egg') || titleLower.includes('oil') || titleLower.includes('powder')) {
-        // Essential pantry items get grouped into cooking basics
-        assignedCategory = 'Bakery'; 
       }
 
       return {
         ...p,
-        category: assignedCategory, // Overwrite backend tag with clean layout name
-        price: Math.round(p.price * 300) // Keep currency calculation active
+        category: assignedCategory,
+        price: Math.round(p.price * 300) 
       };
     });
   } catch (error) {
@@ -55,13 +53,13 @@ onMounted(async () => {
   }
 });
 
-// Automatically displays only the categories that actually contain products
+// Auto-generates the text pill buttons
 const categories = computed(() => {
   const list = products.value.map(p => p.category);
   return ['All', ...new Set(list)];
 });
 
-// Combines search input field query with the active pill filter selection
+// Search and filter logic
 const filteredProducts = computed(() => {
   return products.value.filter(p => {
     const matchesSearch = p.title.toLowerCase().includes(searchQuery.value.toLowerCase());
@@ -90,10 +88,10 @@ const filteredProducts = computed(() => {
         :key="category"
         @click="selectedCategory = category"
         :class="[
-          'px-4 py-1.5 rounded-full text-sm font-medium capitalize transition-colors',
+          'px-4 py-1.5 rounded-full text-sm font-medium capitalize transition-colors shadow-sm',
           selectedCategory === category 
             ? 'bg-blue-600 text-white' 
-            : 'bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
+            : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-100 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700 dark:hover:bg-gray-700'
         ]"
       >
         {{ category }}
@@ -105,12 +103,7 @@ const filteredProducts = computed(() => {
         <div class="absolute inset-0 border-4 border-blue-100 dark:border-gray-700 rounded-full"></div>
         <div class="absolute inset-0 border-4 border-t-blue-600 border-r-transparent border-b-transparent border-l-transparent rounded-full animate-spin"></div>
       </div>
-      <h3 class="text-xl font-bold text-gray-700 dark:text-gray-300 tracking-wide">
-        Gathering Fresh Stock...
-      </h3>
-      <p class="text-xs text-gray-400 dark:text-gray-500">
-        Please wait while we stock our store shelves
-      </p>
+      <h3 class="text-xl font-bold text-gray-700 dark:text-gray-300 tracking-wide">Gathering Fresh Stock...</h3>
     </div>
 
     <div v-else-if="filteredProducts.length > 0" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">

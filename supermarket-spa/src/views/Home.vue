@@ -11,19 +11,19 @@ const loading = ref(true);
 // State for the Quick View Modal
 const selectedProduct = ref<Product | null>(null);
 
-// 🌟 NEW: Track selected quantity
+// Track selected quantity
 const selectedQuantity = ref(1); 
 
 const openQuickView = (product: Product) => {
   selectedProduct.value = product;
-  selectedQuantity.value = 1; // Reset quantity back to 1 every time a new product is opened
+  selectedQuantity.value = 1; 
 };
 
 const closeQuickView = () => {
   selectedProduct.value = null;
 };
 
-// 🌟 NEW: Quantity Control Functions
+// Quantity Control Functions
 const decreaseQuantity = () => {
   if (selectedQuantity.value > 1) {
     selectedQuantity.value--;
@@ -31,7 +31,6 @@ const decreaseQuantity = () => {
 };
 
 const increaseQuantity = () => {
-  // Prevent user from selecting more than what is in stock
   if (selectedProduct.value && selectedQuantity.value < selectedProduct.value.stock) {
     selectedQuantity.value++;
   }
@@ -47,7 +46,10 @@ onMounted(async () => {
       const catLower = p.category?.toLowerCase() || '';
       
       let assignedCategory = 'Household'; 
+      // 🌟 NEW: Default unit assignment
+      let assignedUnit = 'unit';
 
+      // 1. Assign Categories
       if (titleLower.includes('pet') || titleLower.includes('dog') || titleLower.includes('cat') || titleLower.includes('bird')) {
         assignedCategory = 'Pet Care';
       } 
@@ -70,9 +72,21 @@ onMounted(async () => {
         assignedCategory = 'Pantry & Kitchen';
       }
 
+      // 🌟 2. Assign Smart Units (kg, L, dozen, pack, etc.)
+      if (assignedCategory === 'Meats & Fish' || assignedCategory === 'Fruits' || titleLower.match(/(rice|sugar|salt|potato|onion|garlic|carrot|cabbage|veg|powder)/)) {
+        assignedUnit = 'kg';
+      } else if (assignedCategory === 'Beverages' || titleLower.match(/(oil|milk|juice|water|shampoo)/)) {
+        assignedUnit = 'L';
+      } else if (titleLower.includes('egg')) {
+        assignedUnit = 'dozen';
+      } else if (assignedCategory === 'Bakery' || assignedCategory === 'Pet Care' || titleLower.includes('soap')) {
+        assignedUnit = 'pack';
+      }
+
       return {
         ...p,
-        category: assignedCategory, 
+        category: assignedCategory,
+        unit: assignedUnit, // 🌟 Save the unit to the product
         price: Math.round((p.price || 0) * 300) 
       };
     });
@@ -200,7 +214,7 @@ const filteredProducts = computed(() => {
       <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Try adjusting your search or category filter.</p>
     </div>
 
-    <!-- 🌟 QUICK VIEW MODAL (Now with Quantity Selector) -->
+    <!-- 🌟 QUICK VIEW MODAL -->
     <div v-if="selectedProduct" class="fixed inset-0 z-[60] flex items-center justify-center p-4 sm:p-6">
       <div class="absolute inset-0 bg-gray-900/60 dark:bg-black/80 backdrop-blur-sm transition-opacity animate-in fade-in" @click="closeQuickView"></div>
       
@@ -231,15 +245,16 @@ const filteredProducts = computed(() => {
           
           <div class="mt-auto pt-6 border-t border-gray-100 dark:border-gray-700 flex flex-col sm:flex-row gap-4 sm:items-center justify-between">
             <div class="flex flex-col">
-              <span class="text-sm text-gray-500 dark:text-gray-400 line-through" v-if="selectedProduct.discountPercentage">
-                Rs. {{ Math.round(selectedProduct.price * (100 / (100 - selectedProduct.discountPercentage))) }}
+              <!-- 🌟 NEW: Added the assigned unit next to the price (e.g., Rs. 500 / kg) -->
+              <span class="text-3xl font-black text-gray-900 dark:text-white flex items-baseline gap-2">
+                Rs. {{ selectedProduct.price }}
+                <span class="text-lg text-gray-500 dark:text-gray-400 font-semibold">/ {{ selectedProduct.unit }}</span>
               </span>
-              <span class="text-3xl font-black text-gray-900 dark:text-white">Rs. {{ selectedProduct.price }}</span>
             </div>
             
             <div class="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
               
-              <!-- 🌟 NEW: Quantity Selector Component -->
+              <!-- Quantity Selector Component -->
               <div class="flex items-center bg-gray-100 dark:bg-gray-700 rounded-xl p-1 w-full sm:w-auto justify-between">
                 <button 
                   @click="decreaseQuantity" 

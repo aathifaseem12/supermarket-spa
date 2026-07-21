@@ -10,9 +10,22 @@ const loading = ref(true);
 
 // State for the Quick View Modal
 const selectedProduct = ref<Product | null>(null);
-
-// Track selected quantity
 const selectedQuantity = ref(1); 
+
+// 🌟 INTEGRATED: Your advanced unit calculation logic for the Home Page
+const getUnit = (productData: Product | null) => {
+  if (!productData) return '';
+  const name = productData.title.toLowerCase();
+  const category = productData.category;
+  
+  if (name.includes('water') || name.includes('juice') || name.includes('milk') || name.includes('cola') || name.includes('soda') || name.includes('drink') || name.includes('oil')) return '/ L';
+  if (name.includes('egg')) return '/ Dozen';
+  if (name.includes('ice cream')) return '/ Tub';
+  if (name.includes('pet') || name.includes('can') || name.includes('tuna')) return '/ Can';
+  if (name.includes('biscuit') || name.includes('snack') || name.includes('box')) return '/ Pack';
+  if (category === 'Household' || category === 'Beauty & Fragrances') return '/ unit';
+  return '/ Kg';
+};
 
 const openQuickView = (product: Product) => {
   selectedProduct.value = product;
@@ -23,7 +36,6 @@ const closeQuickView = () => {
   selectedProduct.value = null;
 };
 
-// Quantity Control Functions
 const decreaseQuantity = () => {
   if (selectedQuantity.value > 1) {
     selectedQuantity.value--;
@@ -46,10 +58,8 @@ onMounted(async () => {
       const catLower = p.category?.toLowerCase() || '';
       
       let assignedCategory = 'Household'; 
-      // 🌟 NEW: Default unit assignment
-      let assignedUnit = 'unit';
 
-      // 1. Assign Categories
+      // 🌟 STRICT ORDER OF OPERATIONS 🌟
       if (titleLower.includes('pet') || titleLower.includes('dog') || titleLower.includes('cat') || titleLower.includes('bird')) {
         assignedCategory = 'Pet Care';
       } 
@@ -72,21 +82,9 @@ onMounted(async () => {
         assignedCategory = 'Pantry & Kitchen';
       }
 
-      // 🌟 2. Assign Smart Units (kg, L, dozen, pack, etc.)
-      if (assignedCategory === 'Meats & Fish' || assignedCategory === 'Fruits' || titleLower.match(/(rice|sugar|salt|potato|onion|garlic|carrot|cabbage|veg|powder)/)) {
-        assignedUnit = 'kg';
-      } else if (assignedCategory === 'Beverages' || titleLower.match(/(oil|milk|juice|water|shampoo)/)) {
-        assignedUnit = 'L';
-      } else if (titleLower.includes('egg')) {
-        assignedUnit = 'dozen';
-      } else if (assignedCategory === 'Bakery' || assignedCategory === 'Pet Care' || titleLower.includes('soap')) {
-        assignedUnit = 'pack';
-      }
-
       return {
         ...p,
         category: assignedCategory,
-        unit: assignedUnit, // 🌟 Save the unit to the product
         price: Math.round((p.price || 0) * 300) 
       };
     });
@@ -214,7 +212,7 @@ const filteredProducts = computed(() => {
       <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Try adjusting your search or category filter.</p>
     </div>
 
-    <!-- 🌟 QUICK VIEW MODAL -->
+    <!-- 🌟 QUICK VIEW MODAL (Now perfectly syncing the / L and / Kg logic) -->
     <div v-if="selectedProduct" class="fixed inset-0 z-[60] flex items-center justify-center p-4 sm:p-6">
       <div class="absolute inset-0 bg-gray-900/60 dark:bg-black/80 backdrop-blur-sm transition-opacity animate-in fade-in" @click="closeQuickView"></div>
       
@@ -245,11 +243,13 @@ const filteredProducts = computed(() => {
           
           <div class="mt-auto pt-6 border-t border-gray-100 dark:border-gray-700 flex flex-col sm:flex-row gap-4 sm:items-center justify-between">
             <div class="flex flex-col">
-              <!-- 🌟 NEW: Added the assigned unit next to the price (e.g., Rs. 500 / kg) -->
+              
+              <!-- 🌟 UPDATED: Displaying the smart getUnit() right inside the Quick View Modal -->
               <span class="text-3xl font-black text-gray-900 dark:text-white flex items-baseline gap-2">
                 Rs. {{ selectedProduct.price }}
-                <span class="text-lg text-gray-500 dark:text-gray-400 font-semibold">/ {{ selectedProduct.unit }}</span>
+                <span class="text-lg text-gray-500 dark:text-gray-400 font-semibold">{{ getUnit(selectedProduct) }}</span>
               </span>
+
             </div>
             
             <div class="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">

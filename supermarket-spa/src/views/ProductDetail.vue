@@ -1,14 +1,14 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
-import { useRoute } from 'vue-router';
 import type { Product } from '../types';
-import { useCartStore } from '../store/cart';
 
-const route = useRoute();
-const cartStore = useCartStore();
-const product = ref<Product | null>(null);
-const loading = ref(true);
+defineProps<{
+  product: Product
+}>();
 
+// This allows the card to tell Home.vue to open the Quick View Modal
+defineEmits(['quick-view']);
+
+// 🌟 INTEGRATED: Your advanced unit calculation logic
 const getUnit = (productData: Product | null) => {
   if (!productData) return '';
   const name = productData.title.toLowerCase();
@@ -19,100 +19,62 @@ const getUnit = (productData: Product | null) => {
   if (name.includes('ice cream')) return '/ Tub';
   if (name.includes('pet') || name.includes('can') || name.includes('tuna')) return '/ Can';
   if (name.includes('biscuit') || name.includes('snack') || name.includes('box')) return '/ Pack';
-  // Note: I removed Pantry & Kitchen from here so that veggies and rice properly show as "/ Kg"
   if (category === 'Household' || category === 'Beauty & Fragrances') return '/ unit';
   return '/ Kg';
 };
-
-onMounted(async () => {
-  try {
-    const res = await fetch(`https://dummyjson.com/products/${route.params.id}`);
-    const fetchedProduct = await res.json();
-    
-    fetchedProduct.price = Math.round((fetchedProduct.price || 0) * 300);
-    
-    const titleLower = fetchedProduct.title?.toLowerCase() || '';
-    const catLower = fetchedProduct.category?.toLowerCase() || '';
-    
-    let assignedCategory = 'Household';
-
-    // 🌟 SAME STRICT ORDER OF OPERATIONS 🌟
-    if (titleLower.includes('pet') || titleLower.includes('dog') || titleLower.includes('cat') || titleLower.includes('bird')) {
-      assignedCategory = 'Pet Care';
-    } 
-    else if (titleLower.includes('chicken') || titleLower.includes('meat') || titleLower.includes('fish') || titleLower.includes('beef') || titleLower.includes('tuna') || titleLower.includes('steak')) {
-      assignedCategory = 'Meats & Fish';
-    } 
-    else if (catLower === 'beauty' || catLower === 'fragrances' || titleLower.includes('soap') || titleLower.includes('shampoo')) {
-      assignedCategory = 'Beauty & Fragrances';
-    } 
-    else if (titleLower.includes('bread') || titleLower.includes('croissant') || titleLower.includes('cake') || titleLower.includes('bun') || titleLower.includes('biscuit')) {
-      assignedCategory = 'Bakery'; 
-    } 
-    else if (titleLower.includes('water') || titleLower.includes('juice') || titleLower.includes('milk') || titleLower.includes('cola') || titleLower.includes('soda') || titleLower.includes('drink') || titleLower.includes('coffee')) {
-      assignedCategory = 'Beverages';
-    } 
-    else if (titleLower.includes('apple') || titleLower.includes('banana') || titleLower.includes('berry') || titleLower.includes('fruit') || titleLower.includes('kiwi') || titleLower.includes('lemon')) {
-      assignedCategory = 'Fruits';
-    } 
-    else if (catLower === 'groceries' || titleLower.includes('egg') || titleLower.includes('oil') || titleLower.includes('powder') || titleLower.includes('rice') || titleLower.includes('sugar') || titleLower.includes('salt') || titleLower.includes('tomato') || titleLower.includes('potato') || titleLower.includes('onion') || titleLower.includes('garlic') || titleLower.includes('carrot') || titleLower.includes('cabbage') || titleLower.includes('veg')) {
-      assignedCategory = 'Pantry & Kitchen';
-    }
-
-    fetchedProduct.category = assignedCategory;
-    product.value = fetchedProduct;
-  } catch (error) {
-    console.error("Error:", error);
-  } finally {
-    loading.value = false;
-  }
-});
 </script>
 
 <template>
-  <div class="max-w-5xl mx-auto px-4 py-12">
+  <div class="group relative bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-4 transition-all duration-300 hover:shadow-2xl hover:shadow-blue-500/10 dark:hover:shadow-blue-900/20 hover:-translate-y-1 overflow-hidden flex flex-col pb-16">
     
-    <div v-if="loading" class="flex flex-col items-center justify-center min-h-[50vh] gap-4 animate-pulse">
-      <div class="relative w-16 h-16 flex items-center justify-center">
-        <div class="absolute inset-0 border-4 border-blue-100 dark:border-gray-700 rounded-full"></div>
-        <div class="absolute inset-0 border-4 border-t-blue-600 border-r-transparent border-b-transparent border-l-transparent rounded-full animate-spin"></div>
-      </div>
-      <h3 class="text-xl font-bold text-gray-700 dark:text-gray-300 tracking-wide">
-        Inspecting Item Details...
-      </h3>
+    <!-- Floating Category Badge -->
+    <div class="absolute top-6 left-6 z-10 pointer-events-none">
+      <span class="bg-white/90 dark:bg-gray-900/90 backdrop-blur-md text-xs font-extrabold px-3 py-1.5 rounded-full shadow-sm text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-600">
+        {{ product.category }}
+      </span>
     </div>
 
-    <div v-else-if="product" class="grid grid-cols-1 md:grid-cols-2 gap-12 bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
-      
-      <div class="flex items-center justify-center bg-gray-50 dark:bg-gray-900 rounded-xl p-6">
-        <img :src="product.thumbnail" :alt="product.title" class="max-h-96 object-contain rounded-lg" />
-      </div>
-
-      <div class="flex flex-col justify-center">
-        <span class="text-xs uppercase font-bold tracking-widest text-blue-600 dark:text-blue-400 mb-2">
-          {{ product.category }}
+    <!-- Image Container with Zoom & Quick View Overlay -->
+    <div 
+      class="relative h-48 w-full mb-4 rounded-xl overflow-hidden bg-gray-50 dark:bg-gray-900 flex items-center justify-center cursor-pointer border border-transparent dark:border-gray-700/50" 
+      @click="$emit('quick-view', product)"
+    >
+      <img 
+        :src="product.thumbnail" 
+        :alt="product.title" 
+        class="object-contain h-full w-full p-4 transition-transform duration-500 group-hover:scale-110"
+      />
+      <!-- Quick View Hover Overlay -->
+      <div class="absolute inset-0 bg-black/0 group-hover:bg-black/5 dark:group-hover:bg-black/40 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+        <span class="bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm text-gray-900 dark:text-white text-sm font-bold py-2 px-5 rounded-full shadow-lg transform translate-y-4 group-hover:translate-y-0 transition-all duration-300 border border-transparent dark:border-gray-600">
+          Quick View
         </span>
-        <h1 class="text-3xl font-black text-gray-900 dark:text-white mb-4">{{ product.title }}</h1>
-        
-        <p class="text-gray-600 dark:text-gray-300 mb-6 leading-relaxed">{{ product.description }}</p>
-        
-        <div class="flex items-baseline gap-2 mb-8">
-          <span class="text-4xl font-black text-gray-900 dark:text-white">Rs. {{ product.price }}</span>
-          <span class="text-xl font-medium text-gray-400 dark:text-gray-500">{{ getUnit(product) }}</span>
-        </div>
-
-        <button 
-          @click="cartStore.addToCart(product)" 
-          class="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold px-8 py-3.5 rounded-xl transition-colors shadow-sm focus:outline-none focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-900"
-        >
-          Add to Shopping Cart
-        </button>
       </div>
     </div>
 
-    <div v-else class="text-center text-red-500 py-12">
-      Product details could not be found.
+    <!-- Product Details -->
+    <div class="flex flex-col flex-1 px-1">
+      <h3 
+        class="font-bold text-gray-900 dark:text-white line-clamp-2 leading-snug mb-1 cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 transition-colors" 
+        @click="$emit('quick-view', product)"
+      >
+        {{ product.title }}
+      </h3>
+      
+      <!-- 🌟 UPDATED: Calling the new getUnit function directly -->
+      <p class="text-xl font-black text-blue-600 dark:text-blue-400 mt-auto pt-2 flex items-baseline gap-1.5">
+        Rs. {{ product.price }}
+        <span class="text-sm font-semibold text-gray-500 dark:text-gray-400">{{ getUnit(product) }}</span>
+      </p>
     </div>
 
+    <!-- Sliding Bottom Action Bar -->
+    <div class="absolute bottom-0 left-0 right-0 p-4 opacity-0 transform translate-y-full group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 bg-white dark:bg-gray-800">
+      <button class="w-full bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 font-bold py-2.5 rounded-xl hover:bg-blue-600 dark:hover:bg-blue-500 hover:text-white dark:hover:text-white transition-colors flex items-center justify-center gap-2 shadow-md">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+        Add to Cart
+      </button>
+    </div>
+    
   </div>
 </template>

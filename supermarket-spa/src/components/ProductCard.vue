@@ -1,79 +1,62 @@
 <script setup lang="ts">
 import type { Product } from '../types';
-import { useCartStore } from '../store/cart';
 
 defineProps<{
-  product: Product;
+  product: Product
 }>();
 
-const cartStore = useCartStore();
-
-// Updated unit measurement helper function
-const getUnit = (product: Product) => {
-  const name = product.title.toLowerCase();
-  const category = product.category; // Reads the clean category name we assigned
-  
-  // 1. Liquids and Beverages
-  if (name.includes('water') || name.includes('juice') || name.includes('milk') || name.includes('cola') || name.includes('soda') || name.includes('drink') || name.includes('oil')) {
-    return '/ Bottle';
-  } 
-  // 2. Eggs
-  else if (name.includes('egg')) {
-    return '/ Dozen';
-  } 
-  // 3. Ice Cream
-  else if (name.includes('ice cream')) {
-    return '/ Tub';
-  } 
-  // 4. Canned items
-  else if (name.includes('pet') || name.includes('dog') || name.includes('cat') || (name.includes('food') && name.includes('can')) || name.includes('tuna')) {
-    return '/ Can';
-  } 
-  // 5. Packaged snacks or boxes
-  else if (name.includes('biscuit') || name.includes('snack') || name.includes('chips') || name.includes('box')) {
-    return '/ Pack';
-  }
-  // 🌟 NEW: Clean non-food categories formatting rules
-  else if (category === 'Household' || category === 'Beauty & Fragrances') {
-    return '/ unit';
-  }
-  
-  // Fallback default for actual loose items (vegetables, sugar, flour, etc.)
-  return '/ Kg';
-};
+// This allows the card to tell Home.vue to open the Quick View Modal
+defineEmits(['quick-view']);
 </script>
 
 <template>
-  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-4 flex flex-col justify-between hover:shadow-lg hover:scale-105 transition-all duration-200">
-    <router-link :to="`/product/${product.id}`" class="block bg-gray-50 dark:bg-gray-900 rounded-lg p-4 mb-4 flex items-center justify-center h-48 overflow-hidden">
-      <img :src="product.thumbnail" :alt="product.title" class="max-h-full max-w-full object-contain" />
-    </router-link>
-
-    <div>
-      <span class="text-xs font-bold text-blue-600 dark:text-blue-400 uppercase tracking-wider block mb-1">
+  <div class="group relative bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 p-4 transition-all duration-300 hover:shadow-2xl hover:shadow-blue-500/10 dark:hover:shadow-blue-900/20 hover:-translate-y-1 overflow-hidden flex flex-col pb-16">
+    
+    <!-- Floating Category Badge -->
+    <div class="absolute top-6 left-6 z-10 pointer-events-none">
+      <span class="bg-white/90 dark:bg-gray-900/90 backdrop-blur-md text-xs font-extrabold px-3 py-1.5 rounded-full shadow-sm text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-600">
         {{ product.category }}
       </span>
-      <router-link :to="`/product/${product.id}`" class="block">
-        <h2 class="font-bold text-gray-800 dark:text-white line-clamp-1 hover:text-blue-600 transition-colors">
-          {{ product.title }}
-        </h2>
-      </router-link>
-      <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 line-clamp-2 min-h-[2rem]">
-        {{ product.description }}
+    </div>
+
+    <!-- Image Container with Zoom & Quick View Overlay -->
+    <div 
+      class="relative h-48 w-full mb-4 rounded-xl overflow-hidden bg-gray-50 dark:bg-gray-900 flex items-center justify-center cursor-pointer border border-transparent dark:border-gray-700/50" 
+      @click="$emit('quick-view', product)"
+    >
+      <img 
+        :src="product.thumbnail" 
+        :alt="product.title" 
+        class="object-contain h-full w-full p-4 transition-transform duration-500 group-hover:scale-110"
+      />
+      <!-- Quick View Hover Overlay -->
+      <div class="absolute inset-0 bg-black/0 group-hover:bg-black/5 dark:group-hover:bg-black/40 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+        <span class="bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm text-gray-900 dark:text-white text-sm font-bold py-2 px-5 rounded-full shadow-lg transform translate-y-4 group-hover:translate-y-0 transition-all duration-300 border border-transparent dark:border-gray-600">
+          Quick View
+        </span>
+      </div>
+    </div>
+
+    <!-- Product Details -->
+    <div class="flex flex-col flex-1 px-1">
+      <h3 
+        class="font-bold text-gray-900 dark:text-white line-clamp-2 leading-snug mb-1 cursor-pointer hover:text-blue-600 dark:hover:text-blue-400 transition-colors" 
+        @click="$emit('quick-view', product)"
+      >
+        {{ product.title }}
+      </h3>
+      <p class="text-xl font-black text-blue-600 dark:text-blue-400 mt-auto pt-2">
+        Rs. {{ product.price }}
       </p>
     </div>
 
-    <div class="mt-4 pt-3 border-t border-gray-50 dark:border-gray-700 flex items-center justify-between">
-      <div class="flex items-baseline gap-0.5">
-        <span class="text-lg font-black text-gray-900 dark:text-white">Rs. {{ product.price }}</span>
-        <span class="text-xs font-medium text-gray-400 dark:text-gray-500">{{ getUnit(product) }}</span>
-      </div>
-      <button 
-        @click="cartStore.addToCart(product)"
-        class="bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-3 py-2 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900"
-      >
-        + Add
+    <!-- Sliding Bottom Action Bar -->
+    <div class="absolute bottom-0 left-0 right-0 p-4 opacity-0 transform translate-y-full group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 bg-white dark:bg-gray-800">
+      <button class="w-full bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 font-bold py-2.5 rounded-xl hover:bg-blue-600 dark:hover:bg-blue-500 hover:text-white dark:hover:text-white transition-colors flex items-center justify-center gap-2 shadow-md">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+        Add to Cart
       </button>
     </div>
+    
   </div>
 </template>

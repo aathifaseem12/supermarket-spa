@@ -97,6 +97,39 @@ const filteredProducts = computed(() => {
       </button>
     </div>
 
+    <!-- 🌟 NEW: SEAMLESS FULL-WIDTH SLIDING ADVERTISING BAR -->
+    <div class="my-6 w-full overflow-hidden bg-gradient-to-r from-blue-600 via-purple-600 to-blue-600 rounded-2xl shadow-md border border-white/20 dark:border-gray-700 flex items-center">
+      <div class="py-3 flex whitespace-nowrap animate-marquee">
+        
+        <!-- First Set of Promotions -->
+        <div class="flex items-center shrink-0">
+          <span class="text-white font-bold text-sm sm:text-base mx-8">
+            🎉 Today's Special: Get <span class="text-yellow-300 font-black text-lg">20% OFF</span> all fresh produce! Use code <span class="bg-white/20 px-2 py-0.5 rounded font-mono mx-1">FRESH20</span> at checkout.
+          </span>
+          <span class="text-white font-bold text-sm sm:text-base mx-8">
+            🚚 <span class="text-yellow-300 font-black">FREE Delivery</span> on all orders over Rs. 5000! 
+          </span>
+          <span class="text-white font-bold text-sm sm:text-base mx-8">
+            🔥 Flash Sale: 50% off on selected Beauty & Fragrances today only!
+          </span>
+        </div>
+
+        <!-- Second Set (Exact Duplicate to fill the gap seamlessly) -->
+        <div class="flex items-center shrink-0">
+          <span class="text-white font-bold text-sm sm:text-base mx-8">
+            🎉 Today's Special: Get <span class="text-yellow-300 font-black text-lg">20% OFF</span> all fresh produce! Use code <span class="bg-white/20 px-2 py-0.5 rounded font-mono mx-1">FRESH20</span> at checkout.
+          </span>
+          <span class="text-white font-bold text-sm sm:text-base mx-8">
+            🚚 <span class="text-yellow-300 font-black">FREE Delivery</span> on all orders over Rs. 5000! 
+          </span>
+          <span class="text-white font-bold text-sm sm:text-base mx-8">
+            🔥 Flash Sale: 50% off on selected Beauty & Fragrances today only!
+          </span>
+        </div>
+
+      </div>
+    </div>
+
     <div v-if="loading" class="flex flex-col items-center justify-center py-24 gap-4 animate-pulse">
       <div class="relative w-16 h-16 flex items-center justify-center">
         <div class="absolute inset-0 border-4 border-blue-100 dark:border-gray-700 rounded-full"></div>
@@ -147,5 +180,26 @@ const filteredProducts = computed(() => {
 /* This makes sure cards smoothly slide around when surrounding cards are deleted/moved */
 .list-move {
   transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 🌟 UPDATED: Seamless Ad Bar Sliding Animations */
+@keyframes marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee {
+  display: flex;
+  width: max-content;
+  animation: marquee 25s linear infinite; 
+}
+
+/* Pauses the sliding text if the user hovers their mouse over it */
+.animate-marquee:hover {
+  animation-play-state: paused;
 }
 </style>

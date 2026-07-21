@@ -22,7 +22,12 @@ const toggleDark = () => {
 
     <nav class="bg-white/85 dark:bg-gray-800/85 backdrop-blur-md shadow-sm sticky top-0 z-50 border-b border-gray-100 dark:border-gray-800 transition-colors duration-300">
       <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-        <router-link to="/" class="text-3xl sm:text-4xl font-black text-blue-600 dark:text-blue-400 tracking-tight">
+        
+        <!-- 🌟 UPGRADED LOGO: Larger size, gradient color clip, and smooth shine animation -->
+        <router-link 
+          to="/" 
+          class="text-4xl sm:text-5xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-purple-500 to-blue-600 dark:from-blue-400 dark:via-purple-400 dark:to-blue-400 bg-[length:200%_auto] animate-gradient-text hover:scale-105 transition-transform duration-300 drop-shadow-sm"
+        >
           Ruhuna Supermart
         </router-link>
         
@@ -61,18 +66,31 @@ const toggleDark = () => {
 </template>
 
 <style>
-/* 🌟 NEW: The subtle Dot-Matrix texture pattern */
 .bg-pattern {
-  /* Creates tiny, faint dots spaced 24px apart */
   background-image: radial-gradient(rgba(156, 163, 175, 0.25) 1.5px, transparent 1.5px);
   background-size: 24px 24px;
 }
-/* When Dark Mode is active, the dots change to a faint white */
 .dark .bg-pattern {
   background-image: radial-gradient(rgba(255, 255, 255, 0.08) 1.5px, transparent 1.5px);
 }
 
-/* Page Slide Animations (Kept exactly as you had them) */
+/* 🌟 NEW: The keyframes for the continuous gradient shine effect */
+@keyframes gradient-text {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+.animate-gradient-text {
+  animation: gradient-text 4s ease infinite;
+}
+
+/* Page Slide Animations */
 .page-slide-leave-active {
   transition: all 0.25s ease-in;
 }

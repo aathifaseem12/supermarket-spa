@@ -11,12 +11,30 @@ const loading = ref(true);
 // State for the Quick View Modal
 const selectedProduct = ref<Product | null>(null);
 
+// 🌟 NEW: Track selected quantity
+const selectedQuantity = ref(1); 
+
 const openQuickView = (product: Product) => {
   selectedProduct.value = product;
+  selectedQuantity.value = 1; // Reset quantity back to 1 every time a new product is opened
 };
 
 const closeQuickView = () => {
   selectedProduct.value = null;
+};
+
+// 🌟 NEW: Quantity Control Functions
+const decreaseQuantity = () => {
+  if (selectedQuantity.value > 1) {
+    selectedQuantity.value--;
+  }
+};
+
+const increaseQuantity = () => {
+  // Prevent user from selecting more than what is in stock
+  if (selectedProduct.value && selectedQuantity.value < selectedProduct.value.stock) {
+    selectedQuantity.value++;
+  }
 };
 
 onMounted(async () => {
@@ -182,7 +200,7 @@ const filteredProducts = computed(() => {
       <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Try adjusting your search or category filter.</p>
     </div>
 
-    <!-- 🌟 QUICK VIEW MODAL (Dark Mode Optimized) -->
+    <!-- 🌟 QUICK VIEW MODAL (Now with Quantity Selector) -->
     <div v-if="selectedProduct" class="fixed inset-0 z-[60] flex items-center justify-center p-4 sm:p-6">
       <div class="absolute inset-0 bg-gray-900/60 dark:bg-black/80 backdrop-blur-sm transition-opacity animate-in fade-in" @click="closeQuickView"></div>
       
@@ -219,9 +237,33 @@ const filteredProducts = computed(() => {
               <span class="text-3xl font-black text-gray-900 dark:text-white">Rs. {{ selectedProduct.price }}</span>
             </div>
             
-            <button class="bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white font-bold py-3.5 px-8 rounded-xl shadow-lg shadow-blue-500/30 dark:shadow-none transition-transform transform hover:-translate-y-1">
-              Add to Cart
-            </button>
+            <div class="flex flex-col sm:flex-row items-center gap-3 w-full sm:w-auto">
+              
+              <!-- 🌟 NEW: Quantity Selector Component -->
+              <div class="flex items-center bg-gray-100 dark:bg-gray-700 rounded-xl p-1 w-full sm:w-auto justify-between">
+                <button 
+                  @click="decreaseQuantity" 
+                  class="w-10 h-10 flex items-center justify-center text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-600 rounded-lg shadow-sm transition-all font-bold text-lg disabled:opacity-40 disabled:cursor-not-allowed" 
+                  :disabled="selectedQuantity <= 1"
+                >
+                  -
+                </button>
+                <span class="w-10 text-center font-bold text-gray-900 dark:text-white">{{ selectedQuantity }}</span>
+                <button 
+                  @click="increaseQuantity" 
+                  class="w-10 h-10 flex items-center justify-center text-gray-600 dark:text-gray-300 hover:bg-white dark:hover:bg-gray-600 rounded-lg shadow-sm transition-all font-bold text-lg disabled:opacity-40 disabled:cursor-not-allowed" 
+                  :disabled="selectedProduct && selectedQuantity >= selectedProduct.stock"
+                >
+                  +
+                </button>
+              </div>
+
+              <!-- Add to Cart Button -->
+              <button class="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 text-white font-bold py-3.5 px-8 rounded-xl shadow-lg shadow-blue-500/30 dark:shadow-none transition-transform transform hover:-translate-y-1">
+                Add to Cart
+              </button>
+              
+            </div>
           </div>
         </div>
 
@@ -232,7 +274,6 @@ const filteredProducts = computed(() => {
 </template>
 
 <style scoped>
-/* 🌟 RESTORED: Your original cubic-bezier smooth transition animations */
 .list-enter-from,
 .list-leave-to {
   opacity: 0;
@@ -248,7 +289,6 @@ const filteredProducts = computed(() => {
   transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Ad Bar Animations */
 @keyframes marquee {
   0% { transform: translateX(0); }
   100% { transform: translateX(-50%); }
